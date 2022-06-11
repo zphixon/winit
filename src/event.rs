@@ -260,6 +260,9 @@ pub enum WindowEvent<'a> {
     Focused(bool),
 
     /// An event from the keyboard has been received.
+    ///
+    /// Platform-specific behavior:
+    /// - **Windows**: `device_id` is a dummy value.
     KeyboardInput {
         device_id: DeviceId,
         input: KeyboardInput,
@@ -291,6 +294,9 @@ pub enum WindowEvent<'a> {
     Ime(Ime),
 
     /// The cursor has moved on the window.
+    ///
+    /// Platform-specific behavior:
+    /// - **Windows**: `device_id` is a dummy value.
     CursorMoved {
         device_id: DeviceId,
 
@@ -303,12 +309,21 @@ pub enum WindowEvent<'a> {
     },
 
     /// The cursor has entered the window.
+    ///
+    /// Platform-specific behavior:
+    /// - **Windows**: `device_id` is a dummy value.
     CursorEntered { device_id: DeviceId },
 
     /// The cursor has left the window.
+    ///
+    /// Platform-specific behavior:
+    /// - **Windows**: `device_id` is a dummy value.
     CursorLeft { device_id: DeviceId },
 
     /// A mouse wheel movement or touchpad scroll occurred.
+    ///
+    /// Platform-specific behavior:
+    /// - **Windows**: `device_id` is a dummy value.
     MouseWheel {
         device_id: DeviceId,
         delta: MouseScrollDelta,
@@ -318,6 +333,9 @@ pub enum WindowEvent<'a> {
     },
 
     /// An mouse button press has been received.
+    ///
+    /// Platform-specific behavior:
+    /// - **Windows**: `device_id` is a dummy value.
     MouseInput {
         device_id: DeviceId,
         state: ElementState,

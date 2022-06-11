@@ -74,7 +74,10 @@ use windows_sys::Win32::{
 
 use crate::{
     dpi::{PhysicalPosition, PhysicalSize},
-    event::{DeviceEvent, Event, Force, Ime, KeyboardInput, Touch, TouchPhase, WindowEvent},
+    event::{
+        DeviceEvent, DeviceId as RootDeviceId, Event, Force, Ime, KeyboardInput, Touch, TouchPhase,
+        WindowEvent,
+    },
     event_loop::{ControlFlow, EventLoopClosed, EventLoopWindowTarget as RootELW},
     monitor::MonitorHandle as RootMonitorHandle,
     platform_impl::platform::{
@@ -87,7 +90,7 @@ use crate::{
         raw_input, util,
         window::InitData,
         window_state::{CursorFlags, ImeState, WindowFlags, WindowState},
-        wrap_device_id, WindowId, DEVICE_ID,
+        wrap_device_id, DeviceId, WindowId, DEVICE_ID,
     },
     window::{Fullscreen, WindowId as RootWindowId},
 };
@@ -1594,6 +1597,10 @@ unsafe fn public_window_callback_inner<T: 'static>(
             {
                 inputs.set_len(pcount);
                 for input in &inputs {
+                    // OK to cast from isize: 64-bit versions of Windows use 32-bit handles.
+                    // https://docs.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication
+                    let device_id = RootDeviceId(DeviceId(input.hSource as u32));
+
                     let mut location = POINT {
                         x: input.x / 100,
                         y: input.y / 100,
@@ -1621,7 +1628,7 @@ unsafe fn public_window_callback_inner<T: 'static>(
                             location,
                             force: None, // WM_TOUCH doesn't support pressure information
                             id: input.dwID as u64,
-                            device_id: DEVICE_ID,
+                            device_id,
                         }),
                     });
                 }
@@ -1700,6 +1707,10 @@ unsafe fn public_window_callback_inner<T: 'static>(
                     let y = display_rect.top as f64
                         + pointer_info.ptHimetricLocation.y as f64 * himetric_to_pixel_ratio_y;
 
+                    // OK to cast from isize: 64-bit versions of Windows use 32-bit handles.
+                    // https://docs.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication
+                    let device_id = RootDeviceId(DeviceId(pointer_info.sourceDevice as u32));
+
                     let mut location = POINT {
                         x: x.floor() as i32,
                         y: y.floor() as i32,
@@ -1760,7 +1771,7 @@ unsafe fn public_window_callback_inner<T: 'static>(
                             location,
                             force,
                             id: pointer_info.pointerId as u64,
-                            device_id: DEVICE_ID,
+                            device_id,
                         }),
                     });
                 }
