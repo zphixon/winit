@@ -447,8 +447,11 @@ impl fmt::Debug for Axis {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         #[derive(Debug)]
         struct Axis {
+            #[allow(dead_code)]
             value: f64,
+            #[allow(dead_code)]
             prev_value: f64,
+            #[allow(dead_code)]
             axis: Option<GamepadAxis>,
         }
 
@@ -464,11 +467,13 @@ impl fmt::Debug for Axis {
 
 #[derive(Debug)]
 pub struct RawGamepad {
+    #[allow(dead_code)]
     handle: HANDLE,
     pre_parsed_data: Vec<u8>,
     button_count: usize,
     pub button_state: Vec<bool>,
     pub prev_button_state: Vec<bool>,
+    #[allow(dead_code)]
     axis_count: usize,
     pub axis_state: Vec<Axis>,
 }

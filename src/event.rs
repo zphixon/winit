@@ -518,6 +518,8 @@ pub struct Touch {
     ///
     /// This may get reused by the system after the touch ends.
     pub id: u64,
+    // Whether the pen is inverted.
+    pub inverted: bool,
 }
 
 /// Describes the force of a touch event

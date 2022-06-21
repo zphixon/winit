@@ -9,7 +9,7 @@ use winapi::shared::windef::{HMENU, HWND};
 
 use crate::{
     dpi::PhysicalSize,
-    event::device::{GamepadHandle, KeyboardId, MouseId},
+    event::device::{GamepadHandle, HidId, KeyboardId, MouseId},
     event_loop::EventLoop,
     monitor::MonitorHandle,
     platform_impl::{EventLoop as WindowsEventLoop, Parent, WinIcon},
@@ -267,6 +267,18 @@ impl DeviceExtWindows for MouseId {
 }
 
 impl DeviceExtWindows for KeyboardId {
+    #[inline]
+    fn persistent_identifier(&self) -> Option<String> {
+        self.0.persistent_identifier()
+    }
+
+    #[inline]
+    fn handle(&self) -> *mut c_void {
+        self.0.handle() as _
+    }
+}
+
+impl DeviceExtWindows for HidId {
     #[inline]
     fn persistent_identifier(&self) -> Option<String> {
         self.0.persistent_identifier()

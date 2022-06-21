@@ -25,6 +25,7 @@ pub enum GamepadShared {
 
 #[derive(Debug)]
 pub struct Gamepad {
+    #[allow(dead_code)]
     handle: HANDLE,
     backend: GamepadType,
 }

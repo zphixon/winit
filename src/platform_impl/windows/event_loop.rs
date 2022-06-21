@@ -17,10 +17,10 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
-use winapi::shared::basetsd::{DWORD_PTR, UINT_PTR};
 
 use winapi::{
     shared::{
+        basetsd::{DWORD_PTR, UINT_PTR},
         minwindef::{BOOL, DWORD, HIWORD, INT, LOWORD, LPARAM, LRESULT, UINT, WORD, WPARAM},
         windef::{HWND, POINT, RECT},
         windowsx, winerror,
@@ -28,7 +28,7 @@ use winapi::{
     um::{
         commctrl, libloaderapi, ole2, processthreadsapi, winbase,
         winnt::{HANDLE, LONG, LPCSTR, SHORT},
-        winuser,
+        winuser::{self, PEN_FLAG_INVERTED},
     },
 };
 
@@ -100,6 +100,7 @@ pub(crate) enum DeviceId {
 pub(crate) struct SubclassInput<T: 'static> {
     pub window_state: Arc<Mutex<WindowState>>,
     pub shared_data: Rc<SubclassSharedData<T>>,
+    #[allow(dead_code)]
     pub file_drop_handler: Option<FileDropHandler>,
     pub subclass_removed: Cell<bool>,
     pub recurse_depth: Cell<u32>,
@@ -1530,6 +1531,7 @@ unsafe fn public_window_callback_inner<T: 'static>(
                             },
                             location,
                             force: None, // WM_TOUCH doesn't support pressure information
+                            inverted: false, // nor does it support inversion
                             id: input.dwID as u64,
                         }),
                     });
@@ -1618,6 +1620,7 @@ unsafe fn public_window_callback_inner<T: 'static>(
                         continue;
                     }
 
+                    let mut inverted = false;
                     let force = match pointer_info.pointerType {
                         winuser::PT_TOUCH => {
                             let mut touch_info = mem::MaybeUninit::uninit();
@@ -1642,7 +1645,10 @@ unsafe fn public_window_callback_inner<T: 'static>(
                                 ) {
                                     0 => None,
                                     _ => {
-                                        normalize_pointer_pressure(pen_info.assume_init().pressure)
+                                        let pen_info = pen_info.assume_init();
+                                        inverted = pen_info.penFlags & PEN_FLAG_INVERTED
+                                            == PEN_FLAG_INVERTED;
+                                        normalize_pointer_pressure(pen_info.pressure)
                                     }
                                 }
                             })
@@ -1668,6 +1674,7 @@ unsafe fn public_window_callback_inner<T: 'static>(
                             },
                             location,
                             force,
+                            inverted,
                             id: pointer_info.pointerId as u64,
                         }),
                     });
