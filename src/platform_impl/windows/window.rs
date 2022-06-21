@@ -14,7 +14,6 @@ use std::{
 use winapi::{
     ctypes::c_int,
     shared::{
-        guiddef::GUID,
         minwindef::{HINSTANCE, LPARAM, UINT, WPARAM},
         windef::{HWND, POINT, POINTS, RECT},
     },
