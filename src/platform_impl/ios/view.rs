@@ -272,6 +272,7 @@ unsafe fn get_view_class(root_view_class: &'static Class) -> &'static Class {
                             id: touch_id,
                             location: physical_location,
                             force,
+                            pen_info: None,
                             phase,
                         }),
                     }));

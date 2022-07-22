@@ -867,6 +867,14 @@ pub struct Touch {
     pub force: Option<Force>,
     /// Unique identifier of a finger.
     pub id: u64,
+    pub pen_info: Option<PenInfo>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PenInfo {
+    pub barrel: bool,
+    pub inverted: bool,
+    pub eraser: bool,
 }
 
 /// Describes the force of a touch event
