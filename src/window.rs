@@ -1,9 +1,7 @@
 //! The [`Window`] struct and associated types.
 use std::fmt;
 
-use raw_window_handle::{
-    HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle,
-};
+use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 use crate::{
     dpi::{PhysicalPosition, PhysicalSize, Position, Size},
@@ -1054,16 +1052,6 @@ unsafe impl HasRawWindowHandle for Window {
     /// [`Event::Suspended`]: crate::event::Event::Suspended
     fn raw_window_handle(&self) -> RawWindowHandle {
         self.window.raw_window_handle()
-    }
-}
-
-unsafe impl HasRawDisplayHandle for Window {
-    /// Returns a [`raw_window_handle::RawDisplayHandle`] used by the [`EventLoop`] that
-    /// created a window.
-    ///
-    /// [`EventLoop`]: crate::event_loop::EventLoop
-    fn raw_display_handle(&self) -> RawDisplayHandle {
-        self.window.raw_display_handle()
     }
 }
 

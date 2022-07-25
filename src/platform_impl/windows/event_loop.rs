@@ -19,7 +19,6 @@ use std::{
 
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
-use raw_window_handle::{RawDisplayHandle, WindowsDisplayHandle};
 
 use windows_sys::Win32::{
     Devices::HumanInterfaceDevice::MOUSE_MOVE_RELATIVE,
@@ -319,10 +318,6 @@ impl<T> EventLoopWindowTarget<T> {
     pub fn primary_monitor(&self) -> Option<RootMonitorHandle> {
         let monitor = monitor::primary_monitor();
         Some(RootMonitorHandle { inner: monitor })
-    }
-
-    pub fn raw_display_handle(&self) -> RawDisplayHandle {
-        RawDisplayHandle::Windows(WindowsDisplayHandle::empty())
     }
 }
 

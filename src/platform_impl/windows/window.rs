@@ -1,9 +1,7 @@
 #![cfg(target_os = "windows")]
 
 use parking_lot::Mutex;
-use raw_window_handle::{
-    RawDisplayHandle, RawWindowHandle, Win32WindowHandle, WindowsDisplayHandle,
-};
+use raw_window_handle::{RawWindowHandle, Win32Handle};
 use std::{
     cell::Cell,
     ffi::c_void,
@@ -262,15 +260,10 @@ impl Window {
 
     #[inline]
     pub fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut window_handle = Win32WindowHandle::empty();
+        let mut window_handle = Win32Handle::empty();
         window_handle.hwnd = self.window.0 as *mut _;
         window_handle.hinstance = self.hinstance() as *mut _;
         RawWindowHandle::Win32(window_handle)
-    }
-
-    #[inline]
-    pub fn raw_display_handle(&self) -> RawDisplayHandle {
-        RawDisplayHandle::Windows(WindowsDisplayHandle::empty())
     }
 
     #[inline]
