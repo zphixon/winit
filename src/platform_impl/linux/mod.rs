@@ -20,7 +20,7 @@ use std::{ffi::CStr, mem::MaybeUninit, os::raw::*, sync::Arc};
 use once_cell::sync::Lazy;
 #[cfg(feature = "x11")]
 use parking_lot::Mutex;
-use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
+use raw_window_handle::RawWindowHandle;
 
 #[cfg(feature = "x11")]
 pub use self::x11::XNotSupported;
@@ -578,11 +578,6 @@ impl Window {
     pub fn raw_window_handle(&self) -> RawWindowHandle {
         x11_or_wayland!(match self; Window(window) => window.raw_window_handle())
     }
-
-    #[inline]
-    pub fn raw_display_handle(&self) -> RawDisplayHandle {
-        x11_or_wayland!(match self; Window(window) => window.raw_display_handle())
-    }
 }
 
 /// Hooks for X11 errors.
@@ -826,10 +821,6 @@ impl<T> EventLoopWindowTarget<T> {
             #[cfg(feature = "x11")]
             EventLoopWindowTarget::X(ref evlp) => evlp.set_device_event_filter(_filter),
         }
-    }
-
-    pub fn raw_display_handle(&self) -> raw_window_handle::RawDisplayHandle {
-        x11_or_wayland!(match self; Self(evlp) => evlp.raw_display_handle())
     }
 }
 

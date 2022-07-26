@@ -40,7 +40,6 @@ use std::{
 use libc::{self, setlocale, LC_CTYPE};
 
 use mio::{unix::SourceFd, Events, Interest, Poll, Token, Waker};
-use raw_window_handle::{RawDisplayHandle, XlibDisplayHandle};
 
 use self::{
     dnd::{Dnd, DndState},
@@ -569,14 +568,6 @@ impl<T> EventLoopWindowTarget<T> {
         self.xconn
             .select_xinput_events(self.root, ffi::XIAllMasterDevices, mask)
             .queue();
-    }
-
-    pub fn raw_display_handle(&self) -> raw_window_handle::RawDisplayHandle {
-        let mut display_handle = XlibDisplayHandle::empty();
-        display_handle.display = self.xconn.display as *mut _;
-        display_handle.screen =
-            unsafe { (self.xconn.xlib.XDefaultScreen)(self.xconn.display as *mut _) };
-        RawDisplayHandle::Xlib(display_handle)
     }
 }
 

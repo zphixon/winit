@@ -10,7 +10,7 @@ use std::{
 
 use libc;
 use parking_lot::Mutex;
-use raw_window_handle::{RawDisplayHandle, RawWindowHandle, XlibDisplayHandle, XlibWindowHandle};
+use raw_window_handle::{RawWindowHandle, XlibHandle};
 use x11_dl::xlib::TrueColor;
 
 use crate::{
@@ -1510,16 +1510,8 @@ impl UnownedWindow {
 
     #[inline]
     pub fn raw_window_handle(&self) -> RawWindowHandle {
-        let mut window_handle = XlibWindowHandle::empty();
+        let mut window_handle = XlibHandle::empty();
         window_handle.window = self.xlib_window();
         RawWindowHandle::Xlib(window_handle)
-    }
-
-    #[inline]
-    pub fn raw_display_handle(&self) -> RawDisplayHandle {
-        let mut display_handle = XlibDisplayHandle::empty();
-        display_handle.display = self.xlib_display();
-        display_handle.screen = self.screen_id;
-        RawDisplayHandle::Xlib(display_handle)
     }
 }
