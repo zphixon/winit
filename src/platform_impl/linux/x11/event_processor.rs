@@ -1046,6 +1046,7 @@ impl<T: 'static> EventProcessor<T> {
                                     location,
                                     force: None, // TODO
                                     id,
+                                    pen_info: None,
                                 }),
                             })
                         }
