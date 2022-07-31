@@ -1749,6 +1749,7 @@ unsafe fn public_window_callback_inner<T: 'static>(
                             force: None, // WM_TOUCH doesn't support pressure information
                             id: input.dwID as u64,
                             device_id: DEVICE_ID,
+                            pen_info: None,
                         }),
                     });
                 }
@@ -1836,37 +1837,45 @@ unsafe fn public_window_callback_inner<T: 'static>(
                         continue;
                     }
 
-                    let force = match pointer_info.pointerType {
-                        PT_TOUCH => {
+                    let mut force = None;
+                    let mut pen_info = None;
+
+                    match pointer_info.pointerType {
+                        winuser::PT_TOUCH => {
                             let mut touch_info = mem::MaybeUninit::uninit();
-                            GET_POINTER_TOUCH_INFO.and_then(|GetPointerTouchInfo| {
-                                match GetPointerTouchInfo(
-                                    pointer_info.pointerId,
-                                    touch_info.as_mut_ptr(),
-                                ) {
-                                    0 => None,
-                                    _ => normalize_pointer_pressure(
-                                        touch_info.assume_init().pressure,
-                                    ),
-                                }
-                            })
+                            if (GET_POINTER_TOUCH_INFO.unwrap())(
+                                pointer_info.pointerId,
+                                touch_info.as_mut_ptr(),
+                            ) != 0
+                            {
+                                force =
+                                    normalize_pointer_pressure(touch_info.assume_init().pressure);
+                            }
                         }
-                        PT_PEN => {
-                            let mut pen_info = mem::MaybeUninit::uninit();
-                            GET_POINTER_PEN_INFO.and_then(|GetPointerPenInfo| {
-                                match GetPointerPenInfo(
-                                    pointer_info.pointerId,
-                                    pen_info.as_mut_ptr(),
-                                ) {
-                                    0 => None,
-                                    _ => {
-                                        normalize_pointer_pressure(pen_info.assume_init().pressure)
-                                    }
-                                }
-                            })
+
+                        winuser::PT_PEN => {
+                            let mut pointer_pen_info = mem::MaybeUninit::uninit();
+                            if (GET_POINTER_PEN_INFO.unwrap())(
+                                pointer_info.pointerId,
+                                pointer_pen_info.as_mut_ptr(),
+                            ) != 0
+                            {
+                                use winapi::um::winuser::*;
+                                let pointer_pen_info = pointer_pen_info.assume_init();
+                                force = normalize_pointer_pressure(pointer_pen_info.pressure);
+                                pen_info = Some(PenInfo {
+                                    barrel: pointer_pen_info.penFlags & PEN_FLAG_BARREL
+                                        == PEN_FLAG_BARREL,
+                                    inverted: pointer_pen_info.penFlags & PEN_FLAG_INVERTED
+                                        == PEN_FLAG_INVERTED,
+                                    eraser: pointer_pen_info.penFlags & PEN_FLAG_ERASER
+                                        == PEN_FLAG_ERASER,
+                                });
+                            }
                         }
-                        _ => None,
-                    };
+
+                        _ => {}
+                    }
 
                     let x = location.x as f64 + x.fract();
                     let y = location.y as f64 + y.fract();
@@ -1886,6 +1895,7 @@ unsafe fn public_window_callback_inner<T: 'static>(
                             },
                             location,
                             force,
+                            pen_info,
                             id: pointer_info.pointerId as u64,
                             device_id: DEVICE_ID,
                         }),
