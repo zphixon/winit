@@ -48,34 +48,15 @@ use windows_sys::Win32::{
             },
             RIM_TYPEKEYBOARD, RIM_TYPEMOUSE,
         },
-        WindowsAndMessaging::{
-            CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetCursorPos,
-            GetMessageW, LoadCursorW, MsgWaitForMultipleObjectsEx, PeekMessageW, PostMessageW,
-            PostThreadMessageW, RegisterClassExW, RegisterWindowMessageA, SetCursor, SetWindowPos,
-            TranslateMessage, CREATESTRUCTW, GIDC_ARRIVAL, GIDC_REMOVAL, GWL_STYLE, GWL_USERDATA,
-            HTCAPTION, HTCLIENT, MAPVK_VK_TO_VSC, MINMAXINFO, MNC_CLOSE, MSG, MWMO_INPUTAVAILABLE,
-            NCCALCSIZE_PARAMS, PM_NOREMOVE, PM_QS_PAINT, PM_REMOVE, PT_PEN, PT_TOUCH, QS_ALLEVENTS,
-            RI_KEY_E0, RI_KEY_E1, RI_MOUSE_WHEEL, SC_MINIMIZE, SC_RESTORE, SIZE_MAXIMIZED,
-            SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WHEEL_DELTA, WINDOWPOS,
-            WM_CAPTURECHANGED, WM_CHAR, WM_CLOSE, WM_CREATE, WM_DESTROY, WM_DPICHANGED,
-            WM_DROPFILES, WM_ENTERSIZEMOVE, WM_EXITSIZEMOVE, WM_GETMINMAXINFO, WM_IME_COMPOSITION,
-            WM_IME_ENDCOMPOSITION, WM_IME_SETCONTEXT, WM_IME_STARTCOMPOSITION, WM_INPUT,
-            WM_INPUT_DEVICE_CHANGE, WM_KEYDOWN, WM_KEYUP, WM_KILLFOCUS, WM_LBUTTONDOWN,
-            WM_LBUTTONUP, WM_MBUTTONDOWN, WM_MBUTTONUP, WM_MENUCHAR, WM_MOUSEHWHEEL, WM_MOUSEMOVE,
-            WM_MOUSEWHEEL, WM_NCACTIVATE, WM_NCCALCSIZE, WM_NCCREATE, WM_NCDESTROY,
-            WM_NCLBUTTONDOWN, WM_PAINT, WM_POINTERDOWN, WM_POINTERUP, WM_POINTERUPDATE,
-            WM_RBUTTONDOWN, WM_RBUTTONUP, WM_SETCURSOR, WM_SETFOCUS, WM_SETTINGCHANGE, WM_SIZE,
-            WM_SYSCOMMAND, WM_SYSKEYDOWN, WM_SYSKEYUP, WM_TOUCH, WM_WINDOWPOSCHANGED,
-            WM_WINDOWPOSCHANGING, WM_XBUTTONDOWN, WM_XBUTTONUP, WNDCLASSEXW, WS_EX_LAYERED,
-            WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP,
-            WS_VISIBLE,
-        },
+        WindowsAndMessaging::*,
     },
 };
 
 use crate::{
     dpi::{PhysicalPosition, PhysicalSize},
-    event::{DeviceEvent, Event, Force, Ime, KeyboardInput, Touch, TouchPhase, WindowEvent},
+    event::{
+        DeviceEvent, Event, Force, Ime, KeyboardInput, PenInfo, Touch, TouchPhase, WindowEvent,
+    },
     event_loop::{
         ControlFlow, DeviceEventFilter, EventLoopClosed, EventLoopWindowTarget as RootELW,
     },
@@ -1841,7 +1822,7 @@ unsafe fn public_window_callback_inner<T: 'static>(
                     let mut pen_info = None;
 
                     match pointer_info.pointerType {
-                        winuser::PT_TOUCH => {
+                        PT_TOUCH => {
                             let mut touch_info = mem::MaybeUninit::uninit();
                             if (GET_POINTER_TOUCH_INFO.unwrap())(
                                 pointer_info.pointerId,
@@ -1853,14 +1834,13 @@ unsafe fn public_window_callback_inner<T: 'static>(
                             }
                         }
 
-                        winuser::PT_PEN => {
+                        PT_PEN => {
                             let mut pointer_pen_info = mem::MaybeUninit::uninit();
                             if (GET_POINTER_PEN_INFO.unwrap())(
                                 pointer_info.pointerId,
                                 pointer_pen_info.as_mut_ptr(),
                             ) != 0
                             {
-                                use winapi::um::winuser::*;
                                 let pointer_pen_info = pointer_pen_info.assume_init();
                                 force = normalize_pointer_pressure(pointer_pen_info.pressure);
                                 pen_info = Some(PenInfo {
