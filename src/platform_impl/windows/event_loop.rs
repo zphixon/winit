@@ -616,8 +616,6 @@ pub static TASKBAR_CREATED: Lazy<u32> =
     Lazy::new(|| unsafe { RegisterWindowMessageA("TaskbarCreated\0".as_ptr()) });
 
 fn create_event_target_window<T: 'static>() -> HWND {
-    use windows_sys::Win32::UI::WindowsAndMessaging::CS_HREDRAW;
-    use windows_sys::Win32::UI::WindowsAndMessaging::CS_VREDRAW;
     unsafe {
         let class = WNDCLASSEXW {
             cbSize: mem::size_of::<WNDCLASSEXW>() as u32,
