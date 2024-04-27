@@ -437,6 +437,13 @@ impl ApplicationHandler<UserEvent> for Application {
             WindowEvent::DoubleTapGesture { .. } => {
                 info!("Smart zoom");
             },
+            WindowEvent::Touch(touch) => {
+                if let Some(pen_info) = touch.pen_info {
+                    info!("Pen at {:?}, phase {:?}, info {:?}", touch.location, touch.phase, pen_info);
+                } else {
+                    info!("Touch at {:?}, phase {:?}", touch.location, touch.phase);
+                }
+            },
             WindowEvent::TouchpadPressure { .. }
             | WindowEvent::HoveredFileCancelled
             | WindowEvent::KeyboardInput { .. }
@@ -445,7 +452,6 @@ impl ApplicationHandler<UserEvent> for Application {
             | WindowEvent::DroppedFile(_)
             | WindowEvent::HoveredFile(_)
             | WindowEvent::Destroyed
-            | WindowEvent::Touch(_)
             | WindowEvent::Moved(_) => (),
         }
     }

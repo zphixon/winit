@@ -856,6 +856,18 @@ pub struct Touch {
     pub force: Option<Force>,
     /// Unique identifier of a finger.
     pub id: u64,
+    /// Information about a stylus, if this Touch event came from one
+    pub pen_info: Option<PenInfo>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PenInfo {
+    /// Whether the barrel button is currently pressed
+    pub barrel: bool,
+    /// Whether the stylus is currently inverted
+    pub inverted: bool,
+    /// Whether the eraser is currently pressed
+    pub eraser: bool,
 }
 
 /// Describes the force of a touch event
@@ -1087,6 +1099,7 @@ mod tests {
                     location: (0.0, 0.0).into(),
                     id: 0,
                     force: Some(event::Force::Normalized(0.0)),
+                    pen_info: None,
                 }));
                 with_window_event(ThemeChanged(crate::window::Theme::Light));
                 with_window_event(Occluded(true));
@@ -1176,6 +1189,7 @@ mod tests {
             location: (0.0, 0.0).into(),
             id: 0,
             force: Some(event::Force::Normalized(0.0)),
+            pen_info: None,
         }
         .clone();
         let _ =

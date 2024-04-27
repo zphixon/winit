@@ -1864,6 +1864,7 @@ unsafe fn public_window_callback_inner(
                             force: None, // WM_TOUCH doesn't support pressure information
                             id: input.dwID as u64,
                             device_id: DEVICE_ID,
+                            pen_info: None,
                         }),
                     });
                 }
@@ -1957,6 +1958,8 @@ unsafe fn public_window_callback_inner(
                         continue;
                     }
 
+                    let mut pen_info = None;
+
                     let force = match pointer_info.pointerType {
                         PT_TOUCH => {
                             let mut touch_info = mem::MaybeUninit::uninit();
@@ -1975,15 +1978,34 @@ unsafe fn public_window_callback_inner(
                             })
                         },
                         PT_PEN => {
-                            let mut pen_info = mem::MaybeUninit::uninit();
+                            let mut pen_info_ptr = mem::MaybeUninit::uninit();
                             util::GET_POINTER_PEN_INFO.and_then(|GetPointerPenInfo| {
                                 match unsafe {
-                                    GetPointerPenInfo(pointer_info.pointerId, pen_info.as_mut_ptr())
+                                    GetPointerPenInfo(
+                                        pointer_info.pointerId,
+                                        pen_info_ptr.as_mut_ptr(),
+                                    )
                                 } {
                                     0 => None,
-                                    _ => normalize_pointer_pressure(unsafe {
-                                        pen_info.assume_init().pressure
-                                    }),
+                                    _ => unsafe {
+                                        let init_pen_info_ptr = pen_info_ptr.assume_init();
+
+                                        use windows_sys::Win32::UI::WindowsAndMessaging::{
+                                            PEN_FLAG_BARREL, PEN_FLAG_ERASER, PEN_FLAG_INVERTED,
+                                        };
+
+                                        pen_info = Some(crate::event::PenInfo {
+                                            barrel: init_pen_info_ptr.penFlags & PEN_FLAG_BARREL
+                                                == PEN_FLAG_BARREL,
+                                            inverted: init_pen_info_ptr.penFlags
+                                                & PEN_FLAG_INVERTED
+                                                == PEN_FLAG_INVERTED,
+                                            eraser: init_pen_info_ptr.penFlags & PEN_FLAG_ERASER
+                                                == PEN_FLAG_ERASER,
+                                        });
+
+                                        normalize_pointer_pressure(init_pen_info_ptr.pressure)
+                                    },
                                 }
                             })
                         },
@@ -2010,6 +2032,7 @@ unsafe fn public_window_callback_inner(
                             force,
                             id: pointer_info.pointerId as u64,
                             device_id: DEVICE_ID,
+                            pen_info,
                         }),
                     });
                 }
